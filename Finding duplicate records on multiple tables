@@ -57,6 +57,7 @@ WHERE Person.BusinessEntityID IN
 	)
 ORDER BY Person.BusinessEntityID
 
+
 	-- OUTPUT
 BusinessEntityID	FirstName	MiddleName	LastName	AddressID	AddressLine1		AddressLine2	PostalCode	PhoneNumber	City		StateProvinceID		StateProvinceCode	StateProvinceName	TerritoryName	CountryRegionCode
 2996            	Amanda		S	        Cook	    	238	        4098 Woodcrest Dr.	NULL	        98201		252-555-0177	Everett  	79	            	WA 	              	Washington	      	Northwest	US
