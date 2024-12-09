@@ -79,6 +79,7 @@ FROM (
 ) AS OriginalTables
 WHERE OriginalTables.RowNumberRemovingDuplicates = 1		-- RemovingDuplicatesLevel2
 
+
 	-- OUTPUT
 DeparmentName			BusinessEntityID
 Engineering			2
@@ -120,6 +121,7 @@ FROM (
 ) AS OriginalTables
 WHERE OriginalTables.RowNumberRemovingDuplicates = 1					-- RemovingDuplicatesLevel2
 GROUP BY OriginalTables.DepartmentName, OriginalTables.BusinessEntityID		-- PrepareForCountingEmployeesLevel3
+
 
 	-- OUTPUT
 DeparmentName			BusinessEntityID	EmployeeCountByDepartment
