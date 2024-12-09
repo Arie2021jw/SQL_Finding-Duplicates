@@ -58,6 +58,8 @@ dept_DocControl	dept_Engin	dept_Exec	dept_FacILMaint	dept_Finance	dept_HR	dept_I
 
 
 
+
+
 Below are the queries used step-by-step for this solution.
 
 	Query #1.1: We remove the duplicated BusinessEntityIDs for the employees that changed departments, in order to retrieve the list of (unique BusinessEntityIDs) employees
