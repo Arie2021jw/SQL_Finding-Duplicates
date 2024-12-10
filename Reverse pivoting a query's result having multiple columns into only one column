@@ -12,9 +12,9 @@ Important Note:
 
 
 Tables used:
-[AdventureWorks2022].[HumanResources].[Employee]
-[AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory]
-[AdventureWorks2022].[HumanResources].[Department]
+1) [AdventureWorks2022].[HumanResources].[Employee]
+2) [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory]
+3) [AdventureWorks2022].[HumanResources].[Department]
 
 
 	Query #1: We reverse the pivoting of multiple NUMERIC data type columns into only one column using a Cartesian Product, (window) function ROW_NUMBER and a CASE statement
