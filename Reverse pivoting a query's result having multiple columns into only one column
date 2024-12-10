@@ -207,3 +207,86 @@ Now we use 1 CASE statement to:
 2) we keep only 1 new column ("NewPivotedOneColumn") as mentioned above.
  
 See Query #1 showing the desired result.
+
+
+
+
+
+Solution #2: This is an alternative for Solution #1 using Common Table Expression (CTEs) to reverse pivoting of multiple columns of NUMERIC data type into only one column. 
+
+	Query #2: We reverse the pivoting of multiple NUMERIC data type columns into only one column using a Common Table Expression (CTEs), a Cartesian Product, (window) function ROW_NUMBER and a CASE statement
+	---------
+WITH 
+OriginalTables AS 
+(
+	SELECT								-- OriginalTablesLevel1
+	ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
+	, Employee.BusinessEntityID	
+	, EmployeeDepartmentHistory.DepartmentID
+	, Employee.NationalIDNumber
+	FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
+	LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
+		ON Employee.BusinessEntityID = EmployeeDepartmentHistory.BusinessEntityID
+	LEFT JOIN [AdventureWorks2022].[HumanResources].[Department] AS Department
+		ON EmployeeDepartmentHistory.DepartmentID = Department.DepartmentID	
+	WHERE Employee.BusinessEntityID <> 1				-- OriginalTablesLevel1
+),
+RemovingDuplicates AS 
+(
+	SELECT OriginalTables.BusinessEntityID				-- RemovingDuplicatesLevel2
+	, OriginalTables.DepartmentID	
+	, OriginalTables.NationalIDNumber
+	FROM OriginalTables
+	WHERE OriginalTables.RowNumberRemovingDuplicates = 1		-- RemovingDuplicatesLevel2
+),
+Iteration AS 
+(
+	SELECT SalesOrderDetailID AS Position				-- IterationLevel2
+	FROM [AdventureWorks2022].[Sales].[SalesOrderDetail]
+	WHERE SalesOrderDetailID < 4					-- IterationLevel2
+),
+
+RepeatedRows AS 
+(
+	SELECT RemovingDuplicates.BusinessEntityID			-- RepeatedRowsLevel3
+	, RemovingDuplicates.DepartmentID
+	, RemovingDuplicates.NationalIDNumber
+	, ROW_NUMBER() OVER (PARTITION BY RemovingDuplicates.BusinessEntityID ORDER BY RemovingDuplicates.BusinessEntityID) AS RowNumberTranspose
+	FROM RemovingDuplicates,
+	Iteration							-- RepeatedRowsLevel3
+)
+SELECT RepeatedRows.RowNumberTranspose					-- PivotingIntoOneColumnOnlyNumericColumnsLevel4
+, CASE RepeatedRows.RowNumberTranspose
+		WHEN 1 THEN RepeatedRows.BusinessEntityID
+		WHEN 2 THEN RepeatedRows.DepartmentID
+		WHEN 3 THEN RepeatedRows.NationalIDNumber
+		END AS NewPivotedOneColumn
+FROM RepeatedRows							-- PivotingIntoOneColumnOnlyNumericColumnsLevel4
+
+
+	-- OUTPUT
+RowNumberTranspose	NewPivotedOneColumn
+1			2
+2			1
+3			245797967
+1			3
+2			1
+3			509647174
+1			4
+2			2
+3			112457891
+...........................................TRUNCATED RESULTS ......
+1			288
+2			3
+3			954276278
+1			289
+2			3
+3			668991357
+1			290
+2			3
+3			134219713
+(end of results)
+(867 rows affected)
+
+
+We get the same results as in Query #1.
