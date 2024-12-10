@@ -8,7 +8,7 @@ The columns whose records were reverse pivoted are:
 3) NationalIDNumber
 
 
-Important Note:
+Important Note: 
 
 
 Tables used:
@@ -38,7 +38,6 @@ FROM (
 				SELECT							-- OriginalTablesLevel1
 				ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
 				, Employee.BusinessEntityID	
-				, Employee.HireDate
 				, EmployeeDepartmentHistory.DepartmentID
 				, Department.[Name] AS DepartmentName
 				, Employee.NationalIDNumber
@@ -117,7 +116,6 @@ BusinessEntityID	DepartmentID	NationalIDNumber	Transposition		NewPivotedOneColum
 		SELECT										-- OriginalTablesLevel1
 		ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
 		, Employee.BusinessEntityID	
-		, Employee.HireDate
 		, EmployeeDepartmentHistory.DepartmentID
 		, Department.[Name] AS DepartmentName
 		, Employee.NationalIDNumber
@@ -163,7 +161,6 @@ FROM (
 		SELECT										-- OriginalTablesLevel1
 		ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
 		, Employee.BusinessEntityID	
-		, Employee.HireDate
 		, EmployeeDepartmentHistory.DepartmentID
 		, Department.[Name] AS DepartmentName
 		, Employee.NationalIDNumber
