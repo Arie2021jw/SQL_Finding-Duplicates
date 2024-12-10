@@ -145,7 +145,6 @@ BusinessEntityID	DepartmentID	DepartmentName			FirstName	MiddleName	LastName
 
 
 
-
 	Query #1.2: We create a new column "NewDepartmentName" that shows the department name only once
 	-----------
 SELECT										-- RemovingDepartmentNamesLevel3
