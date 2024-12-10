@@ -290,3 +290,130 @@ RowNumberTranspose	NewPivotedOneColumn
 
 
 We get the same results as in Query #1.
+
+
+
+
+
+As mentioned above, Solution #1 can be used to reverse pivoting on columns of NUMERIC data type but CANNOT be used for columns of other data types such as VARCHAR or DATE.
+
+To illustrate this we will proceed with 2 attempts, Query #3, Attempt #1 for VARCHAR data type using column "DepartmentName" and Query #3, Attempt #2 for DATE data type using column "HireDate". 
+
+	Query #3, Attempt #1: We reverse the pivoting for 4 columns including VARCHAR data type using column "DepartmentName"
+	---------------------
+SELECT X.RowNumberTranspose						-- PivotingIntoOneColumnOnlyNumericColumnsLevel4
+, CASE X.RowNumberTranspose
+		WHEN 1 THEN X.BusinessEntityID
+		WHEN 2 THEN X.DepartmentID
+		WHEN 3 THEN X.DepartmentName	
+		WHEN 4 THEN X.NationalIDNumber
+		END AS NewPivotedOneColumn
+FROM (
+		SELECT RemovingDuplicates.BusinessEntityID							-- RepeatedRowsLevel3
+		, RemovingDuplicates.DepartmentID
+		, RemovingDuplicates.NationalIDNumber
+		, RemovingDuplicates.DepartmentName
+		, ROW_NUMBER() OVER (PARTITION BY RemovingDuplicates.BusinessEntityID ORDER BY RemovingDuplicates.BusinessEntityID) AS RowNumberTranspose
+		FROM (
+			SELECT OriginalTables.BusinessEntityID							-- RemovingDuplicatesLevel2
+			, OriginalTables.DepartmentID	
+			, OriginalTables.DepartmentName
+			, OriginalTables.NationalIDNumber
+			FROM (
+				SELECT										-- OriginalTablesLevel1
+				ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
+				, Employee.BusinessEntityID	
+				, EmployeeDepartmentHistory.DepartmentID
+				, Department.[Name] AS DepartmentName
+				, Employee.NationalIDNumber
+				FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
+				LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
+					ON Employee.BusinessEntityID = EmployeeDepartmentHistory.BusinessEntityID
+				LEFT JOIN [AdventureWorks2022].[HumanResources].[Department] AS Department
+					ON EmployeeDepartmentHistory.DepartmentID = Department.DepartmentID	
+				WHERE Employee.BusinessEntityID <> 1						-- OriginalTablesLevel1
+			) AS OriginalTables
+			WHERE OriginalTables.RowNumberRemovingDuplicates = 1					-- RemovingDuplicatesLevel2
+			) AS RemovingDuplicates,
+			(
+			SELECT SalesOrderDetailID AS Position							-- IterationLevel2
+			FROM [AdventureWorks2022].[Sales].[SalesOrderDetail]
+			WHERE SalesOrderDetailID < 5								-- IterationLevel2
+			) AS Iteration										-- RepeatedRowsLevel3
+) AS X									-- PivotingIntoOneColumnOnlyNumericColumnsLevel4
+
+
+	-- OUTPUT
+RowNumberTranspose	NewPivotedOneColumn
+1			2
+2			1
+
+Msg 245, Level 16, State 1, Line 3
+Conversion failed when converting the nvarchar value 'Engineering' to data type int.
+(end of results)
+
+
+	Comments on above OUTPUT:
+	-------------------------
+This query returns the error "Conversion failed when converting the nvarchar value 'Engineering' to data type int".
+In this query column "RowNumberTranspose" has an INTEGER data type whereas column "DepartmentName" has a NVARCHAR data type.
+Because INTEGER data type has a higher data type precedence over NVARCHAR data type, SQL Server tries to implicitly convert "Engineering" (record on row #1 for column "DepartmentName") from NVARCHAR into INTEGER but it fails.
+All expressions (CASE, WHEN, THEN, ELSE) used as arguments for a CASE statement need to have the same data type.
+
+
+
+
+	Query #3, Attempt #2: We reverse the pivoting for 4 columns including VARCHAR data type using column "HireDate"
+	---------------------
+SELECT X.RowNumberTranspose						-- PivotingIntoOneColumnOnlyNumericColumnsLevel4
+, CASE X.RowNumberTranspose
+		WHEN 1 THEN X.BusinessEntityID
+		WHEN 2 THEN X.DepartmentID
+		WHEN 3 THEN X.NationalIDNumber
+		WHEN 4 THEN X.HireDate
+		END AS NewPivotedOneColumn
+FROM (
+		SELECT RemovingDuplicates.BusinessEntityID							-- RepeatedRowsLevel3
+		, RemovingDuplicates.DepartmentID
+		, RemovingDuplicates.NationalIDNumber
+		, RemovingDuplicates.HireDate
+		, ROW_NUMBER() OVER (PARTITION BY RemovingDuplicates.BusinessEntityID ORDER BY RemovingDuplicates.BusinessEntityID) AS RowNumberTranspose
+		FROM (
+			SELECT OriginalTables.BusinessEntityID							-- RemovingDuplicatesLevel2
+			, OriginalTables.DepartmentID	
+			, OriginalTables.NationalIDNumber
+			, OriginalTables.HireDate
+			FROM (
+				SELECT										-- OriginalTablesLevel1
+				ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
+				, Employee.BusinessEntityID	
+				, EmployeeDepartmentHistory.DepartmentID
+				, Employee.NationalIDNumber
+				, Employee.HireDate
+				FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
+				LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
+					ON Employee.BusinessEntityID = EmployeeDepartmentHistory.BusinessEntityID
+				LEFT JOIN [AdventureWorks2022].[HumanResources].[Department] AS Department
+					ON EmployeeDepartmentHistory.DepartmentID = Department.DepartmentID	
+				WHERE Employee.BusinessEntityID <> 1						-- OriginalTablesLevel1
+			) AS OriginalTables
+			WHERE OriginalTables.RowNumberRemovingDuplicates = 1					-- RemovingDuplicatesLevel2
+			) AS RemovingDuplicates,
+			(
+			SELECT SalesOrderDetailID AS Position							-- IterationLevel2
+			FROM [AdventureWorks2022].[Sales].[SalesOrderDetail]
+			WHERE SalesOrderDetailID < 5								-- IterationLevel2
+			) AS Iteration										-- RepeatedRowsLevel3
+) AS X									-- PivotingIntoOneColumnOnlyNumericColumnsLevel4
+
+
+	-- OUTPUT
+Msg 206, Level 16, State 2, Line 2
+Operand type clash: int is incompatible with date
+Msg 206, Level 16, State 2, Line 2
+Operand type clash: smallint is incompatible with date
+
+
+	Comments on above OUTPUT:
+	-------------------------
+This query fails because SQL Server tries to perform an arithmetic operation between an INTEGER and a DATE value.
