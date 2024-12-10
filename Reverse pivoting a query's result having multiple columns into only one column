@@ -39,7 +39,6 @@ FROM (
 				ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
 				, Employee.BusinessEntityID	
 				, EmployeeDepartmentHistory.DepartmentID
-				, Department.[Name] AS DepartmentName
 				, Employee.NationalIDNumber
 				FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
 				LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
@@ -117,7 +116,6 @@ BusinessEntityID	DepartmentID	NationalIDNumber	Transposition		NewPivotedOneColum
 		ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
 		, Employee.BusinessEntityID	
 		, EmployeeDepartmentHistory.DepartmentID
-		, Department.[Name] AS DepartmentName
 		, Employee.NationalIDNumber
 		FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
 		LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
@@ -162,7 +160,6 @@ FROM (
 		ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
 		, Employee.BusinessEntityID	
 		, EmployeeDepartmentHistory.DepartmentID
-		, Department.[Name] AS DepartmentName
 		, Employee.NationalIDNumber
 		FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
 		LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
