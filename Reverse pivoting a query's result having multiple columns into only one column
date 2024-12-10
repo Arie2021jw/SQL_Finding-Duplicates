@@ -1,0 +1,215 @@
+Exercise #1: Reverse pivoting a query's result having multiple columns into only one column.
+
+
+Solution #1: We reverse the pivoting of multiple NUMERIC data type columns into only one column. 
+The columns whose records were reverse pivoted are:
+1) BusinessEntityID
+2) DepartmentID
+3) NationalIDNumber
+
+
+Important Note:
+
+
+Tables used:
+[AdventureWorks2022].[HumanResources].[Employee]
+[AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory]
+[AdventureWorks2022].[HumanResources].[Department]
+
+
+	Query #1: We reverse the pivoting of multiple NUMERIC data type columns into only one column using a Cartesian Product, (window) function ROW_NUMBER and a CASE statement
+	---------
+SELECT X.RowNumberTranspose				-- PivotingIntoOneColumnOnlyNumericColumnsLevel4
+, CASE X.RowNumberTranspose
+		WHEN 1 THEN X.BusinessEntityID
+		WHEN 2 THEN X.DepartmentID
+		WHEN 3 THEN X.NationalIDNumber
+		END AS NewPivotedOneColumn
+FROM (
+		SELECT RemovingDuplicates.BusinessEntityID			-- RepeatedRowsLevel3
+		, RemovingDuplicates.DepartmentID
+		, RemovingDuplicates.NationalIDNumber
+		, ROW_NUMBER() OVER (PARTITION BY RemovingDuplicates.BusinessEntityID ORDER BY RemovingDuplicates.BusinessEntityID) AS RowNumberTranspose
+		FROM (
+			SELECT OriginalTables.BusinessEntityID			-- RemovingDuplicatesLevel2
+			, OriginalTables.DepartmentID	
+			, OriginalTables.NationalIDNumber
+			FROM (
+				SELECT							-- OriginalTablesLevel1
+				ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
+				, Employee.BusinessEntityID	
+				, Employee.HireDate
+				, EmployeeDepartmentHistory.DepartmentID
+				, Department.[Name] AS DepartmentName
+				, Employee.NationalIDNumber
+				FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
+				LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
+					ON Employee.BusinessEntityID = EmployeeDepartmentHistory.BusinessEntityID
+				LEFT JOIN [AdventureWorks2022].[HumanResources].[Department] AS Department
+					ON EmployeeDepartmentHistory.DepartmentID = Department.DepartmentID	
+				WHERE Employee.BusinessEntityID <> 1			-- OriginalTablesLevel1
+			) AS OriginalTables
+			WHERE OriginalTables.RowNumberRemovingDuplicates = 1		-- RemovingDuplicatesLevel2
+			) AS RemovingDuplicates,
+			(
+			SELECT SalesOrderDetailID AS Position				-- IterationLevel2
+			FROM [AdventureWorks2022].[Sales].[SalesOrderDetail]
+			WHERE SalesOrderDetailID < 4					-- IterationLevel2
+			) AS Iteration							-- RepeatedRowsLevel3
+) AS X									-- PivotingIntoOneColumnOnlyNumericColumnsLevel4
+
+
+	-- OUTPUT
+RowNumberTranspose	NewPivotedOneColumn
+1			2
+2			1
+3			245797967
+1			3
+2			1
+3			509647174
+1			4
+2			2
+3			112457891
+...........................................TRUNCATED RESULTS ......
+1			288
+2			3
+3			954276278
+1			289
+2			3
+3			668991357
+1			290
+2			3
+3			134219713
+(end of results)
+(867 rows affected)
+
+
+
+-- https://blog.sqlauthority.com/2015/07/29/sql-server-error-msg-245-conversion-failed-when-converting-the-varchar-value-inactive-to-data-type-int/
+
+
+
+Below are the queries used step-by-step for this solution.
+
+
+
+We use the Cartesian Product to return 1 row for each column we have on our query. As mentioned before, we have 3 columns of employee's data:
+1) BusinessEntityID
+2) DepartmentID
+3) NationalIDNumber
+
+Below we can see an example for the transposition of the employee's data (from multiple columns into a single column) for BusinessEntityID = 2.
+
+
+BusinessEntityID	DepartmentID	NationalIDNumber	Transposition		NewPivotedOneColumn
+--------------------------------------------------------	-------------		-------------------
+2			1		245797967					2			<--- column BusinessEntityID
+								  ======>>>		1			<--- column DepartmentID
+											245797967		<--- column NationalIDNumber
+
+
+	Query #1.1: We remove the duplicated BusinessEntityIDs for the employees that changed departments, in order to retrieve the list of (unique BusinessEntityIDs) employees
+	----------- 
+	SELECT OriginalTables.BusinessEntityID			-- RemovingDuplicatesLevel2
+	, OriginalTables.DepartmentID	
+	, OriginalTables.NationalIDNumber
+	FROM (
+		SELECT										-- OriginalTablesLevel1
+		ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
+		, Employee.BusinessEntityID	
+		, Employee.HireDate
+		, EmployeeDepartmentHistory.DepartmentID
+		, Department.[Name] AS DepartmentName
+		, Employee.NationalIDNumber
+		FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
+		LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
+			ON Employee.BusinessEntityID = EmployeeDepartmentHistory.BusinessEntityID
+		LEFT JOIN [AdventureWorks2022].[HumanResources].[Department] AS Department
+			ON EmployeeDepartmentHistory.DepartmentID = Department.DepartmentID	
+		WHERE Employee.BusinessEntityID <> 1						-- OriginalTablesLevel1
+	) AS OriginalTables
+	WHERE OriginalTables.RowNumberRemovingDuplicates = 1		-- RemovingDuplicatesLevel2
+
+
+	-- OUTPUT
+BusinessEntityID	DepartmentID	NationalIDNumber
+2			1		245797967
+3			1		509647174
+4			2		112457891
+5			1		695256908
+6			1		998320692
+..........................................................TRUNCATED RESULTS ......
+286			3		758596752
+287			3		982310417
+288			3		954276278
+289			3		668991357
+290			3		134219713
+(end of results)
+(289 rows affected)
+
+
+
+	Query #1.2: We use the Cartesian Product and (window) function ROW_NUMBER to create column "RowNumberTranspose" that will retrieve 3 duplicated rows for each employee's data
+	----------- 
+SELECT RemovingDuplicates.BusinessEntityID				-- RepeatedRowsLevel3
+, RemovingDuplicates.DepartmentID
+, RemovingDuplicates.NationalIDNumber
+, ROW_NUMBER() OVER (PARTITION BY RemovingDuplicates.BusinessEntityID ORDER BY RemovingDuplicates.BusinessEntityID) AS RowNumberTranspose
+FROM (
+	SELECT OriginalTables.BusinessEntityID			-- RemovingDuplicatesLevel2
+	, OriginalTables.DepartmentID	
+	, OriginalTables.NationalIDNumber
+	FROM (
+		SELECT										-- OriginalTablesLevel1
+		ROW_NUMBER() OVER (PARTITION BY Employee.BusinessEntityID	ORDER BY Employee.BusinessEntityID ASC, EmployeeDepartmentHistory.StartDate DESC) AS RowNumberRemovingDuplicates
+		, Employee.BusinessEntityID	
+		, Employee.HireDate
+		, EmployeeDepartmentHistory.DepartmentID
+		, Department.[Name] AS DepartmentName
+		, Employee.NationalIDNumber
+		FROM [AdventureWorks2022].[HumanResources].[Employee] AS Employee
+		LEFT JOIN [AdventureWorks2022].[HumanResources].[EmployeeDepartmentHistory] AS EmployeeDepartmentHistory
+			ON Employee.BusinessEntityID = EmployeeDepartmentHistory.BusinessEntityID
+		LEFT JOIN [AdventureWorks2022].[HumanResources].[Department] AS Department
+			ON EmployeeDepartmentHistory.DepartmentID = Department.DepartmentID	
+		WHERE Employee.BusinessEntityID <> 1						-- OriginalTablesLevel1
+	) AS OriginalTables
+	WHERE OriginalTables.RowNumberRemovingDuplicates = 1		-- RemovingDuplicatesLevel2
+	) AS RemovingDuplicates,
+	(
+	SELECT SalesOrderDetailID AS Position						-- IterationLevel2
+	FROM [AdventureWorks2022].[Sales].[SalesOrderDetail]
+	WHERE SalesOrderDetailID < 4								-- IterationLevel2
+	) AS Iteration												-- RepeatedRowsLevel3
+
+
+	-- OUTPUT
+BusinessEntityID	DepartmentID	NationalIDNumber	RowNumberTranspose
+2			1		245797967		1
+2			1		245797967		2
+2			1		245797967		3
+3			1		509647174		1
+3			1		509647174		2
+3			1		509647174		3
+4			2		112457891		1
+4			2		112457891		2
+4			2		112457891		3
+...............................................................................TRUNCATED RESULTS ......
+288			3		954276278		1
+288			3		954276278		2
+288			3		954276278		3
+289			3		668991357		1
+289			3		668991357		2
+289			3		668991357		3
+290			3		134219713		1
+290			3		134219713		2
+290			3		134219713		3
+(end of results)
+(867 rows affected)
+
+
+Now we use 1 CASE statement to:
+1) pivot the employee's data from columns into rows, and 
+2) we keep only 1 new column ("NewPivotedOneColumn") as mentioned above.
+ 
+See Query #1 showing the desired result.
