@@ -1,4 +1,4 @@
-This repository contains multiple examples on how SQL Server can be used to manipulate duplicated records.
+This repository contains multiple examples on how SQL Server can be used to work with data sets.
 
 List of examples:
 1) Concatenating multiple addresses for a BusinessEntityID into one row
