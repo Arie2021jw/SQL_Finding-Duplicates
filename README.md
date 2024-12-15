@@ -1,8 +1,9 @@
-This repository contains 4 folders that have multiple examples on how SQL Server can be used to work with data.
+This repository contains 4 folders that have multiple examples on how SQL Server can be used to work with data:
 1) Hierarchical parent-child relationship
 2) Pivoting
 3) String manipulation
 4) Data sets
+
 
 
 Below is the list of examples for each folder.
