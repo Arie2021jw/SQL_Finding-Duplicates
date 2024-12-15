@@ -12,11 +12,11 @@ Folder #1: Hierarchical parent-child relationship:
 
 
 Folder #2: Pivoting
-  2.1) Pivoting employee count by department name
-  2.2) Pivoting multiple department names under same group name
-  2.3) Pivoting query results for year-to-year comparison of sales
-  2.4) Reverse pivoting a query's result (multiple columns) into only one column
-  2.5) Reverse pivoting employee count by department (columns into rows)
+1) Pivoting employee count by department name
+2) Pivoting multiple department names under same group name
+3) Pivoting query results for year-to-year comparison of sales
+4) Reverse pivoting a query's result (multiple columns) into only one column
+5) Reverse pivoting employee count by department (columns into rows)
 
 
 Folder #3: String manipulation
