@@ -31,12 +31,13 @@ Folder #3: String manipulation
 
 
 Folder #4: Data sets
-1) Concatenating multiple addresses for a BusinessEntityID into one row
-2) Creating evenly size groups of vendors
-3) Dividing vendors into 10 groups based on historical purchasing amounts
-4) Finding beginning and end of a range of consecutive numbers
-5) Finding duplicate records on multiple tables
-6) Finding employees with odd numbers on column BusinessEntityID
-7) Finding the manager for each employee (Parent-Child relationship)
-8) Generate lists of consecutives numeric values
-9) Removing repeating values from a column
+1) Calculating the historic subtotal purchasing amount for all vendors
+2) Concatenating multiple addresses for a BusinessEntityID into one row
+3) Creating evenly size groups of vendors
+4) Dividing vendors into 10 groups based on historical purchasing amounts
+5) Finding beginning and end of a range of consecutive numbers
+6) Finding duplicate records on multiple tables
+7) Finding employees with odd numbers on column BusinessEntityID
+8) Finding the manager for each employee (Parent-Child relationship)
+9) Generate lists of consecutives numeric values
+10) Removing repeating values from a column
